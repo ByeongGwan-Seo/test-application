@@ -15,7 +15,6 @@ export default function Home() {
     window.location.reload();
   }
 
-  //유저 삭제
   const onClickDeleteButton = async () => {
     const message = await deleteUser(value);
     setDeleteMessage(message);
@@ -32,7 +31,7 @@ export default function Home() {
       <div>
       <form onSubmit={(event) => event.preventDefault()}>
         <input onChange={(event) => setValue(event.target.value)} />
-        <button onClick={onClickDeleteButton}>삭제a</button>
+        <button onClick={onClickDeleteButton}>삭제</button>
       </form>
       </div>  
       {deleteMessage && <p>{deleteMessage}</p>}
