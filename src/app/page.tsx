@@ -1,28 +1,16 @@
 "use client"
 
+import useFetchUsers from "@/hooks/useFetchUsers";
 import { db } from "./firebase/firebasedb"
 import { collection, addDoc, deleteDoc, query, where, getDocs } from "firebase/firestore";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function Home() {
   const [value, setValue] = useState<string | number | object | null>(null);
   const [deleteMessage, setDeleteMessage] = useState<string>("");
-  const [users, setUsers] = useState<{ id: string; value: string }[]>([]);
 
   // 유저 목록 불러오기
-  const fetchUsers = async () => {
-    const userRef = collection(db, "users");
-    const querySnapshot = await getDocs(userRef);
-    const userList = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      value: doc.data().value,
-    }));
-    setUsers(userList);
-  };
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  const users = useFetchUsers();
 
   // 유저 이름 등록
   const onClickUpLoadButton = async () => {
