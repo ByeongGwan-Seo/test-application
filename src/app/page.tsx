@@ -10,9 +10,19 @@ export default function Home() {
   const [users, setUsers] = useState<{ id: string; value: string }[]>([]);
 
   // 유저 목록 불러오기
-  
+  const fetchUsers = async () => {
+    const userRef = collection(db, "users");
+    const querySnapshot = await getDocs(userRef);
+    const userList = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      value: doc.data().value,
+    }));
+    setUsers(userList);
+  };
 
-  
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   // 유저 이름 등록
   const onClickUpLoadButton = async () => {
