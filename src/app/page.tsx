@@ -3,44 +3,35 @@
 // hooks
 import { useState } from "react";
 import useUsers from "@/hooks/useUsers";
+import UserForm from "@/components/molecules/Form";
+import UserList from "@/components/organisms/UserList";
+import Message from "@/components/atoms/Message";
 
 export default function Home() {
-  const [value, setValue] = useState<string | number | object | null>(null);
+  const [value, setValue] = useState<string>("");
   const [deleteMessage, setDeleteMessage] = useState<string>("");
-
   const { users, addUser, deleteUser } = useUsers();
 
-  const onClickUpLoadButton = async () => {
+  const handleAddUser = async (value: string) => {
     await addUser(value);
     window.location.reload();
   }
 
-  const onClickDeleteButton = async () => {
+  const handleDeleteUser = async (value: string) => {
     const message = await deleteUser(value);
     setDeleteMessage(message);
   }
 
   return (
     <div>
-      <div>
-      <form onSubmit={(event) => event.preventDefault()}>
-        <input onChange={(event) => setValue(event.target.value)} />
-        <button onClick={onClickUpLoadButton}>전송</button>
-      </form>
-    </div>
-      <div>
-      <form onSubmit={(event) => event.preventDefault()}>
-        <input onChange={(event) => setValue(event.target.value)} />
-        <button onClick={onClickDeleteButton}>삭제</button>
-      </form>
-      </div>  
-      {deleteMessage && <p>{deleteMessage}</p>}
-      <h2>사용자 목록</h2>
-      <ul>
-        {users.map((user) => (
-          <li key={user.id}>{user.value}</li> 
-        ))}
-      </ul>
+      <UserForm 
+        onAddUser={handleAddUser}
+        onDeleteUser={handleDeleteUser}
+        value={value}
+        setValue={setValue}
+      ></UserForm>
+      {deleteMessage && <Message text={deleteMessage}></Message>}
+      <UserList users={users}></UserList>
     </div>
   );
 }
