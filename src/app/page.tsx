@@ -1,95 +1,93 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client"
+
+import { db } from "./firebase/firebasedb"
+import { collection, addDoc, deleteDoc, query, where, getDocs } from "firebase/firestore";
+import { useState, useEffect } from "react";
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [value, setValue] = useState<string | number | object | null>(null);
+  const [deleteMessage, setDeleteMessage] = useState<string>("");
+  const [users, setUsers] = useState<{ id: string; value: string }[]>([]);
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  // 유저 목록 불러오기
+  const fetchUsers = async () => {
+    const userRef = collection(db, "users");
+    const querySnapshot = await getDocs(userRef);
+    const userList = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      value: doc.data().value,
+    }));
+    setUsers(userList);
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // 유저 이름 등록
+  const onClickUpLoadButton = async () => {
+    try {
+      const docRef = await addDoc(collection(db, "users"), {
+        value
+      });
+      console.log("Document's ID: ", docRef.id);
+      window.location.reload()
+    } catch (e) {
+      console.error("Error: ", e);
+    }
+  }
+
+  //유저 삭제
+  const onClickDeleteButton = async () => {
+    // 삭제 input에 아무 것도 입력하지 않았을때
+    if(!value) {
+      setDeleteMessage("뭘 삭제하라구요?")
+      return;
+    }
+    
+    const userRef = collection(db, "users")
+    const findingQuery = query(userRef, where("value", "==", value))
+
+    try {
+      const loadedDoc = await getDocs(findingQuery);
+
+      // 데이터베이스에 입력한 유저가 없을때
+      if (loadedDoc.empty) {
+        setDeleteMessage("그게 누군데요?");
+        return
+      }
+
+      for (const doc of loadedDoc.docs) {
+        // 쿼리를 돌린 후 해당 유저가 있을 경우에 삭제
+        await deleteDoc(doc.ref)
+      }
+      window.location.reload()
+    } catch (e) {
+      console.error("Error: ", e);
+    }
+  }
+
+  return (
+    <div>
+      <div>
+      <form onSubmit={(event) => event.preventDefault()}>
+        <input onChange={(event) => setValue(event.target.value)} />
+        <button onClick={onClickUpLoadButton}>전송</button>
+      </form>
+    </div>
+      <div>
+      <form onSubmit={(event) => event.preventDefault()}>
+        <input onChange={(event) => setValue(event.target.value)} />
+        <button onClick={onClickDeleteButton}>삭제a</button>
+      </form>
+      </div>  
+      {deleteMessage && <p>{deleteMessage}</p>}
+      <h2>사용자 목록</h2>
+      <ul>
+        {users.map((user) => (
+          <li key={user.id}>{user.value}</li> 
+        ))}
+      </ul>
     </div>
   );
 }
