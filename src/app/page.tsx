@@ -1,24 +1,14 @@
 "use client"
 
-// custom hooks
-import useFetchUsers from "@/hooks/useFetchUsers";
-import useAddUser from "@/hooks/useAddUser";
-
-import { db } from "./firebase/firebasedb"
-import { collection, deleteDoc, query, where, getDocs } from "firebase/firestore";
+// hooks
 import { useState } from "react";
-
+import useUsers from "@/hooks/useUsers";
 
 export default function Home() {
   const [value, setValue] = useState<string | number | object | null>(null);
   const [deleteMessage, setDeleteMessage] = useState<string>("");
 
-  // 유저 목록 불러오기
-  const users = useFetchUsers();
-
-  // 유저 이름 등록
-
-  const { addUser } = useAddUser();
+  const { users, addUser, deleteUser } = useUsers();
 
   const onClickUpLoadButton = async () => {
     await addUser(value);
@@ -27,32 +17,8 @@ export default function Home() {
 
   //유저 삭제
   const onClickDeleteButton = async () => {
-    // 삭제 input에 아무 것도 입력하지 않았을때
-    if(!value) {
-      setDeleteMessage("뭘 삭제하라구요?")
-      return;
-    }
-    
-    const userRef = collection(db, "users")
-    const findingQuery = query(userRef, where("value", "==", value))
-
-    try {
-      const loadedDoc = await getDocs(findingQuery);
-
-      // 데이터베이스에 입력한 유저가 없을때
-      if (loadedDoc.empty) {
-        setDeleteMessage("그게 누군데요?");
-        return
-      }
-
-      for (const doc of loadedDoc.docs) {
-        // 쿼리를 돌린 후 해당 유저가 있을 경우에 삭제
-        await deleteDoc(doc.ref)
-      }
-      window.location.reload()
-    } catch (e) {
-      console.error("Error: ", e);
-    }
+    const message = await deleteUser(value);
+    setDeleteMessage(message);
   }
 
   return (
