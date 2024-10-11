@@ -8,18 +8,20 @@ import UserList from "@/components/organisms/UserList";
 import Message from "@/components/atoms/Message";
 
 export default function Home() {
-  const [value, setValue] = useState<string>("");
+  const [addUserValue, setAddUserValue] = useState<string>("");
+  const [deleteUserValue, setDeleteUserValue] = useState<string>("");
   const [deleteMessage, setDeleteMessage] = useState<string>("");
   const { users, addUser, deleteUser } = useUsers();
 
   const handleAddUser = async (value: string) => {
     await addUser(value);
-    window.location.reload();
+    setAddUserValue("");
   }
 
   const handleDeleteUser = async (value: string) => {
     const message = await deleteUser(value);
     setDeleteMessage(message);
+    setDeleteUserValue("");
   }
 
   return (
@@ -27,8 +29,10 @@ export default function Home() {
       <UserForm 
         onAddUser={handleAddUser}
         onDeleteUser={handleDeleteUser}
-        value={value}
-        setValue={setValue}
+        addUserValue={addUserValue}
+        setAddUserValue={setAddUserValue}
+        deleteUserValue={deleteUserValue}
+        setDeleteUserValue={setDeleteUserValue}
       ></UserForm>
       {deleteMessage && <Message text={deleteMessage}></Message>}
       <UserList users={users}></UserList>
