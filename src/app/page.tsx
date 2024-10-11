@@ -1,9 +1,13 @@
 "use client"
 
+// custom hooks
 import useFetchUsers from "@/hooks/useFetchUsers";
+import useAddUser from "@/hooks/useAddUser";
+
 import { db } from "./firebase/firebasedb"
-import { collection, addDoc, deleteDoc, query, where, getDocs } from "firebase/firestore";
+import { collection, deleteDoc, query, where, getDocs } from "firebase/firestore";
 import { useState } from "react";
+
 
 export default function Home() {
   const [value, setValue] = useState<string | number | object | null>(null);
@@ -13,16 +17,12 @@ export default function Home() {
   const users = useFetchUsers();
 
   // 유저 이름 등록
+
+  const { addUser } = useAddUser();
+
   const onClickUpLoadButton = async () => {
-    try {
-      const docRef = await addDoc(collection(db, "users"), {
-        value
-      });
-      console.log("Document's ID: ", docRef.id);
-      window.location.reload()
-    } catch (e) {
-      console.error("Error: ", e);
-    }
+    await addUser(value);
+    window.location.reload();
   }
 
   //유저 삭제
